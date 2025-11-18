@@ -1,21 +1,24 @@
 class Pet {
-    constructor(name, age, gender, breed, service, type) {
+    // UPDATED: Constructor now accepts 'paymentMethod'
+    constructor(name, age, gender, breed, service, type, paymentMethod) { 
         this.Name = name;
         this.Age = parseInt(age);
         this.Gender = gender;
         this.Breed = breed;
         this.Service = service;
         this.Type = type;
+        this.PaymentMethod = paymentMethod; // NEW PROPERTY
     }
 }
 
 const salon = {
+    // UPDATED: Initial clients now include 'PaymentMethod'
     clients: [
-        new Pet("Kobie", 3, "Male", "Cane Corso", "Full Grooming", "Dog"),
-        new Pet("Cooper", 7, "Female", "German Shepherd", "Nail Trim & Filing", "Dog"),
-        new Pet("Barkley", 5, "Male", "Doberman", "Dental Cleaning", "Dog"),
-        new Pet("Shep", 4, "Male", "Belgian Malinois", "De-shedding Treatment", "Dog"),
-        new Pet("Boss", 6, "Male", "Thai Ridgeback", "Deep Conditioning Wash", "Dog")
+        new Pet("Kobie", 3, "Male", "Cane Corso", "Full Grooming", "Dog", "Card"),
+        new Pet("Cooper", 7, "Female", "German Shepherd", "Nail Trim & Filing", "Dog", "Cash"),
+        new Pet("Barkley", 5, "Male", "Doberman", "Dental Cleaning", "Dog", "Venmo"),
+        new Pet("Shep", 4, "Male", "Belgian Malinois", "De-shedding Treatment", "Dog", "Card"),
+        new Pet("Boss", 6, "Male", "Thai Ridgeback", "Deep Conditioning Wash", "Dog", "Cash")
     ],
 
     calculateAverageAge: function() {
@@ -28,73 +31,66 @@ const salon = {
     },
 
     displaySalonData: function() {
-        // --- Display Pet Count (for index.html) ---
         const petCountElement = document.getElementById('petCount');
         if (petCountElement) {
             petCountElement.textContent = this.clients.length;
         }
 
-        // --- Display Pet List (for index.html) ---
-        const petListElement = document.getElementById('petList');
-        if (petListElement) {
-            petListElement.innerHTML = '';
-
-            this.clients.forEach(client => {
-                const listItem = document.createElement('li');
-                listItem.textContent = client.Name;
-                petListElement.appendChild(listItem);
-            });
-        }
-
-        // --- Display Average Age (for index.html) ---
         const averageAgeElement = document.getElementById('averageAge');
         if (averageAgeElement) {
-            const avgAge = this.calculateAverageAge();
-            averageAgeElement.textContent = `${avgAge} years`;
+            averageAgeElement.textContent = `${this.calculateAverageAge()} years`;
         }
     },
-    
-    // REQUIRED FUNCTION: displayRow() to render table rows
+
+    registerNewPet: function(newClient) {
+        this.clients.push(newClient);
+        console.log("Registered a new client:", newClient);
+        this.displayRow();
+        this.displaySalonData();
+    },
+
+    // NEW FUNCTION: Handles pet deletion and re-renders the table
+    deletePet: function(index) {
+        if (index >= 0 && index < this.clients.length) {
+            console.log(`Deleting pet: ${this.clients[index].Name} at index ${index}`);
+            // Remove 1 element starting from the given index
+            this.clients.splice(index, 1);
+            // Re-render the table and update dashboard data
+            this.displayRow();
+            this.displaySalonData();
+        } else {
+            console.error("Invalid index for deletion:", index);
+        }
+    },
+
     displayRow: function() {
         const tableBody = document.querySelector('#petsTable tbody');
-        if (!tableBody) {
-            return; // Exit if the table body doesn't exist
-        }
-        
-        let html = '';
-        
-        this.clients.forEach((pet, index) => {
-            const rowNumber = index + 1;
+        if (!tableBody) return;
 
+        let html = "";
+        // Loop through the clients array
+        for (let i = 0; i < this.clients.length; i++) {
+            const pet = this.clients[i];
             html += `
-                <tr>
-                    <th scope="row">${rowNumber}</th>
+                <tr class="align-middle">
+                    <td class="text-center">${i + 1}</td>
                     <td>${pet.Name}</td>
                     <td>${pet.Age}</td>
                     <td>${pet.Gender}</td>
                     <td>${pet.Breed}</td>
                     <td>${pet.Service}</td>
-                    <td><button class="btn btn-sm btn-danger delete-btn" data-index="${index}">Delete</button></td>
+                    <!-- NEW COLUMN: Displays Payment Method -->
+                    <td class="text-uppercase fw-bold">${pet.PaymentMethod}</td> 
+                    <td class="text-center">
+                        <!-- Calls deletePet function with the current row index -->
+                        <button class="btn btn-sm btn-danger shadow-sm" onclick="salon.deletePet(${i})">
+                            <i class="fas fa-trash-alt me-1"></i> Delete
+                        </button>
+                    </td>
                 </tr>
             `;
-        });
-
+        }
         tableBody.innerHTML = html;
-        
-        // Attaching Delete event listeners (optional for now, but good practice)
-        document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const petIndex = parseInt(e.target.getAttribute('data-index'));
-                console.log(`Attempting to delete pet at index: ${petIndex}`);
-                // Deletion function would be called here.
-            });
-        });
-    },
-    
-    registerNewPet: function(newPet) {
-        this.clients.push(newPet);
-        this.displaySalonData(); // Update dashboard metrics
-        this.displayRow(); // Update the table on registration.html
     }
 };
 
@@ -102,22 +98,30 @@ function handleFormSubmission(e) {
     e.preventDefault();
 
     const name = document.getElementById('petName').value.trim();
-    const age = document.getElementById('petAge').value;
+    const age = document.getElementById('petAge').value.trim();
     const breed = document.getElementById('petBreed').value.trim();
     const gender = document.getElementById('petGender').value;
     const service = document.getElementById('petService').value;
-    // Note: petType is read from a hidden field in registration.html
-    const type = document.getElementById('petType').value; 
+    const paymentMethod = document.getElementById('petPayment').value; // READS NEW FIELD
+    const type = document.getElementById('petType').value;
+
+    const validationMessageElement = document.getElementById('validationMessage');
 
     // --- Validation ---
     const parsedAge = parseInt(age);
-    if (isNaN(parsedAge) || parsedAge <= 0 || name === "" || breed === "" || !gender || !service) {
-        alert("Please ensure all fields are entered correctly.");
-        return; 
+    // UPDATED VALIDATION: Checks for the new paymentMethod field
+    if (isNaN(parsedAge) || parsedAge <= 0 || name === "" || breed === "" || !gender || !service || !paymentMethod) {
+        // Use a custom message box instead of alert()
+        validationMessageElement.textContent = "Please ensure all fields, including Payment Method, are entered correctly and age is a valid number.";
+        validationMessageElement.classList.remove('d-none');
+        return;
     }
+    // Clear the message on success
+    validationMessageElement.classList.add('d-none');
     // --------------------
 
-    const newClient = new Pet(name, parsedAge, gender, breed, service, type);
+    // UPDATED INSTANTIATION: Passes the new attribute to the Pet constructor
+    const newClient = new Pet(name, parsedAge, gender, breed, service, type, paymentMethod);
 
     salon.registerNewPet(newClient);
 
@@ -140,6 +144,6 @@ document.addEventListener("DOMContentLoaded", function() {
     
     const tableBody = document.querySelector('#petsTable tbody');
     if (tableBody) {
-        salon.displayRow(); // Call the new displayRow function to populate the table
+        salon.displayRow();
     }
 });
