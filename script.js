@@ -1,24 +1,25 @@
 class Pet {
-    // UPDATED: Constructor now accepts 'paymentMethod'
-    constructor(name, age, gender, breed, service, type, paymentMethod) { 
+    // UPDATED: Constructor now accepts 'paymentMethod' and 'retainer'
+    constructor(name, age, gender, breed, service, type, paymentMethod, retainer) { 
         this.Name = name;
         this.Age = parseInt(age);
         this.Gender = gender;
         this.Breed = breed;
         this.Service = service;
         this.Type = type;
-        this.PaymentMethod = paymentMethod; // NEW PROPERTY
+        this.PaymentMethod = paymentMethod;
+        this.Retainer = retainer; // NEW PROPERTY
     }
 }
 
 const salon = {
-    // UPDATED: Initial clients now include 'PaymentMethod'
+    // UPDATED: Initial clients now include 'PaymentMethod' and 'Retainer'
     clients: [
-        new Pet("Kobie", 3, "Male", "Cane Corso", "Full Grooming", "Dog", "Card"),
-        new Pet("Cooper", 7, "Female", "German Shepherd", "Nail Trim & Filing", "Dog", "Cash"),
-        new Pet("Barkley", 5, "Male", "Doberman", "Dental Cleaning", "Dog", "Venmo"),
-        new Pet("Shep", 4, "Male", "Belgian Malinois", "De-shedding Treatment", "Dog", "Card"),
-        new Pet("Boss", 6, "Male", "Thai Ridgeback", "Deep Conditioning Wash", "Dog", "Cash")
+        new Pet("Kobie", 3, "Male", "Cane Corso", "Full Grooming", "Dog", "Card", "Monthly"),
+        new Pet("Cooper", 7, "Female", "German Shepherd", "Nail Trim & Filing", "Dog", "Cash", "Bi-Weekly"),
+        new Pet("Barkley", 5, "Male", "Doberman", "Dental Cleaning", "Dog", "Venmo", "None"),
+        new Pet("Shep", 4, "Male", "Belgian Malinois", "De-shedding Treatment", "Dog", "Card", "Weekly"),
+        new Pet("Boss", 6, "Male", "Thai Ridgeback", "Deep Conditioning Wash", "Dog", "Cash", "None")
     ],
 
     calculateAverageAge: function() {
@@ -71,6 +72,9 @@ const salon = {
         // Loop through the clients array
         for (let i = 0; i < this.clients.length; i++) {
             const pet = this.clients[i];
+            // Format retainer for display
+            const retainerDisplay = pet.Retainer === 'None' ? '—' : `${pet.Retainer} Retainer`;
+            
             html += `
                 <tr class="align-middle">
                     <td class="text-center">${i + 1}</td>
@@ -79,10 +83,9 @@ const salon = {
                     <td>${pet.Gender}</td>
                     <td>${pet.Breed}</td>
                     <td>${pet.Service}</td>
-                    <!-- NEW COLUMN: Displays Payment Method -->
                     <td class="text-uppercase fw-bold">${pet.PaymentMethod}</td> 
+                    <td class="text-center">${retainerDisplay}</td>
                     <td class="text-center">
-                        <!-- Calls deletePet function with the current row index -->
                         <button class="btn btn-sm btn-danger shadow-sm" onclick="salon.deletePet(${i})">
                             <i class="fas fa-trash-alt me-1"></i> Delete
                         </button>
@@ -102,17 +105,18 @@ function handleFormSubmission(e) {
     const breed = document.getElementById('petBreed').value.trim();
     const gender = document.getElementById('petGender').value;
     const service = document.getElementById('petService').value;
-    const paymentMethod = document.getElementById('petPayment').value; // READS NEW FIELD
+    const paymentMethod = document.getElementById('petPayment').value;
+    const retainer = document.getElementById('petRetainer').value; // READS NEW FIELD
     const type = document.getElementById('petType').value;
 
     const validationMessageElement = document.getElementById('validationMessage');
 
     // --- Validation ---
     const parsedAge = parseInt(age);
-    // UPDATED VALIDATION: Checks for the new paymentMethod field
+    // UPDATED VALIDATION: Checks required fields (retainer defaults to 'None' so it's not strictly checked)
     if (isNaN(parsedAge) || parsedAge <= 0 || name === "" || breed === "" || !gender || !service || !paymentMethod) {
         // Use a custom message box instead of alert()
-        validationMessageElement.textContent = "Please ensure all fields, including Payment Method, are entered correctly and age is a valid number.";
+        validationMessageElement.textContent = "Please ensure all fields (except Repeat Service), are entered correctly and age is a valid number.";
         validationMessageElement.classList.remove('d-none');
         return;
     }
@@ -121,7 +125,7 @@ function handleFormSubmission(e) {
     // --------------------
 
     // UPDATED INSTANTIATION: Passes the new attribute to the Pet constructor
-    const newClient = new Pet(name, parsedAge, gender, breed, service, type, paymentMethod);
+    const newClient = new Pet(name, parsedAge, gender, breed, service, type, paymentMethod, retainer);
 
     salon.registerNewPet(newClient);
 
