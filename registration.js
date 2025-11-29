@@ -1,8 +1,7 @@
-// This file demonstrates the use of object literals and array manipulation 
-// separate from the main salon application logic in script.js.
+// This file is maintained for auxiliary object creation and array manipulation exercises.
+// The main application data (salon.clients) is now managed by script.js and Local Storage.
 
-// 1. Create 5 pet object literals, matching the initial clients in script.js
-// All objects now include the new attributes: paymentMethod and retainer
+// 1. Example Pet Object Literals (matching the default structure)
 let pet1 = {
    name: "Kobie",
    age: 3,
@@ -10,7 +9,7 @@ let pet1 = {
    service: "Full Grooming",
    breed: "Cane Corso",
    paymentMethod: "Card",
-   retainer: "Monthly" 
+   retainerFrequency: "Weekly"
 };
 
 let pet2 = {
@@ -20,7 +19,7 @@ let pet2 = {
    service: "Nail Trim & Filing",
    breed: "German Shepherd",
    paymentMethod: "Cash",
-   retainer: "Bi-Weekly" 
+   retainerFrequency: "None"
 };
 
 let pet3 = {
@@ -30,28 +29,14 @@ let pet3 = {
    service: "Dental Cleaning",
    breed: "Doberman",
    paymentMethod: "Venmo",
-   retainer: "None" 
-};
-
-let pet4 = {
-   name: "Shep",
-   age: 4,
-   gender: "Male",
-   service: "De-shedding Treatment",
-   breed: "Belgian Malinois",
-   paymentMethod: "Card",
-   retainer: "Weekly" 
-};
-
-let pet5 = {
-   name: "Boss",
-   age: 6,
-   gender: "Male",
-   service: "Deep Conditioning Wash",
-   breed: "Thai Ridgeback",
-   paymentMethod: "Cash",
-   retainer: "None" 
+   retainerFrequency: "Monthly"
 };
 
 // 2. Create a list of pets (array)
-let petsList = [pet1, pet2, pet3, pet4, pet5];
+let petsList = [pet1, pet2, pet3];
+console.log("Example Pet List for registration.js:", petsList);
+
+// 3. Display the pets count
+console.log("Total Example Pets (registration.js):", petsList.length);
+
+// You can continue to use this file for any other non-essential data manipulation logic.
